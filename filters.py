@@ -1,0 +1,48 @@
+def distance(point1,point2):
+    return sqrt((point1[0]-point2[0])**2 + (point1[1]-point2[1])**2)
+
+def idealFilterLP(D0,imgShape):
+    base = np.zeros(imgShape[:2])
+    rows, cols = imgShape[:2]
+    center = (rows/2,cols/2)
+    for x in range(cols):
+        for y in range(rows):
+            if distance((y,x),center) < D0:
+                base[y,x] = 1
+    return base
+
+def idealFilterHP(D0,imgShape):
+    base = np.ones(imgShape[:2])
+    rows, cols = imgShape[:2]
+    center = (rows/2,cols/2)
+    for x in range(cols):
+        for y in range(rows):
+            if distance((y,x),center) < D0:
+                base[y,x] = 0
+    return base
+
+def randomFilter(imgShape):
+    base = np.ones(imgShape[:2])
+    rows, cols = imgShape[:2]
+    for x in range(cols):
+        for y in range(rows):
+            base[y,x] = randint(0,1)
+    return base
+
+def gaussianLP(D0,imgShape):
+    base = np.zeros(imgShape[:2])
+    rows, cols = imgShape[:2]
+    center = (rows/2,cols/2)
+    for x in range(cols):
+        for y in range(rows):
+            base[y,x] = exp(((-distance((y,x),center)**2)/(2*(D0**2))))
+    return base
+
+def gaussianHP(D0,imgShape):
+    base = np.zeros(imgShape[:2])
+    rows, cols = imgShape[:2]
+    center = (rows/2,cols/2)
+    for x in range(cols):
+        for y in range(rows):
+            base[y,x] = 1 - exp(((-distance((y,x),center)**2)/(2*(D0**2))))
+    return base
