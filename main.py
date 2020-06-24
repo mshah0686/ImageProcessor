@@ -7,9 +7,10 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 
 class choice:
-    def __init__(self, checkbox, selection):  
-        self.checkbox = checkbox
+    def __init__(self, checkbox, selection, previous):  
+        self.use_filter = checkbox
         self.selection = selection
+        self.use_previous = previous
 
 original_image_path = "temp.jpg"
 choices = ("Fourier", "LPF", "HPF")
@@ -25,11 +26,35 @@ def run_analysis():
     plt.subplot(251), plt.imshow(original_np, "gray"), plt.title("Original Image")
     plt.subplot(252), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title("Fourier Transform")
     plt.subplot(253), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title("Fourier Shifted")
+
+    #Find analysis to use
     for f in filter_choices:
-        if f.checkbox.get():
+        if f.use_filter.get():
             analysis = f.selection.get()
-            print(analysis)
-    plt.show()
+            if analysis == 'LPF':
+                print('using lpf')
+            elif analysis == 'HPF':
+                print('using hpf')
+            elif analysis == 'Fourier':
+                print('using fourier')
+            else:
+                print('Nothing')
+    #plt.show()
+
+next_loc = 1
+
+def add_filter():
+    global filter_choices, root, next_loc
+    var = IntVar()
+    var2 = IntVar()
+    stringvar = StringVar()
+    filter_choices.append( choice(var, stringvar, var2) )
+    Checkbutton(root, text="use", var=var).grid(row=0, column = next_loc)
+    Checkbutton(root, text="use previous image", var = var2).grid(row = 2, column = next_loc)
+    dp = ttk.Combobox(root, state="readonly", textvariable = stringvar, value=choices)
+    dp.grid(row = 1, column = next_loc)
+    next_loc = next_loc + 1
+    print('Add fliter')
 
 #create application and set size
 root = Tk()
@@ -38,41 +63,8 @@ root.geometry("1200x100")
 #add a button
 but = Button(root, command = run_analysis, text = 'Analyze')
 but.grid(row=0, column=0, pady = 2)
-
-var1 = IntVar()
-stringVar1 = StringVar()
-filter_choices.append( choice(var1, stringVar1) )
-Checkbutton(root, text="use", var=var1).grid(row=0, column = 1)
-dp1 = ttk.Combobox(root, state="readonly", textvariable = stringVar1, value=choices)
-dp1.grid(row = 1, column = 1)
-
-var2 = IntVar()
-stringVar2 = StringVar()
-filter_choices.append( choice(var2, stringVar2) )
-Checkbutton(root, text="use", var=var2).grid(row=0, column = 2)
-dp2 = ttk.Combobox(root, state="readonly", textvariable = stringVar2, value=choices)
-dp2.grid(row = 1, column = 2)
-
-var3 = IntVar()
-stringVar3 = StringVar()
-filter_choices.append( choice(var3, stringVar3) )
-Checkbutton(root, text="use", var=var3).grid(row=0, column = 3)
-dp3 = ttk.Combobox(root, state="readonly", textvariable = stringVar3, value=choices)
-dp3.grid(row = 1, column = 3)
-
-var4 = IntVar()
-stringVar4 = StringVar()
-filter_choices.append( choice(var4, stringVar4) )
-Checkbutton(root, text="use", var=var4).grid(row=0, column = 4)
-dp4 = ttk.Combobox(root, state="readonly", textvariable = stringVar4, value=choices)
-dp4.grid(row = 1, column = 4)
-
-var5 = IntVar()
-stringVar5 = StringVar()
-filter_choices.append( choice(var5, stringVar5) )
-Checkbutton(root, text="use", var=var5).grid(row=0, column = 5)
-dp5 = ttk.Combobox(root, state="readonly", textvariable = stringVar5, value=choices)
-dp5.grid(row = 1, column = 5)
+but = Button(root, command = add_filter, text = 'Add')
+but.grid(row=1, column=0, pady = 2)
 
 #run application
 root.mainloop()
