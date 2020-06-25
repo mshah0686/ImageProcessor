@@ -5,6 +5,7 @@ import scipy as sc
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 from tkinter import ttk
+import filters
 
 class choice:
     def __init__(self, checkbox, selection, previous):  
@@ -23,23 +24,30 @@ def run_analysis():
     original_np = cv.imread(original_image_path, 0)
     fourier_np = np.fft.fft2(original_np)
     shifted_np = np.fft.fftshift(fourier_np)
-    plt.subplot(251), plt.imshow(original_np, "gray"), plt.title("Original Image")
-    plt.subplot(252), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title("Fourier Transform")
-    plt.subplot(253), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title("Fourier Shifted")
+    plt.subplot(2, 5, 1), plt.imshow(original_np, "gray"), plt.title("Original Image")
+    next_plot = 2
+    #plt.subplot(2, 5, 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title("Fourier Transform")
+    #plt.subplot(2, 5, 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title("Fourier Shifted")
 
     #Find analysis to use
     for f in filter_choices:
         if f.use_filter.get():
             analysis = f.selection.get()
+            graph_np = None
             if analysis == 'LPF':
                 print('using lpf')
+                graph_np = shifted_np * filters.idealFilterLP(10, original_np.shape)
             elif analysis == 'HPF':
                 print('using hpf')
+                graph_np = shifted_np * filters.idealFilterHP(10, original_np.shape)
             elif analysis == 'Fourier':
                 print('using fourier')
+                graph_np = shifted_np
             else:
                 print('Nothing')
-    #plt.show()
+            plt.subplot(2, 5, next_plot), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title(analysis)
+        next_plot = next_plot + 1
+    plt.show()
 
 next_loc = 1
 
