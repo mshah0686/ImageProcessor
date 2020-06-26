@@ -2,6 +2,7 @@ from tkinter import *
 import cv2 as cv
 import numpy as np
 import scipy as sc
+import math
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 from tkinter import ttk
@@ -18,7 +19,7 @@ class choice:
         self.image = image
 
 original_image_path = "temp.jpg"
-choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", "Gaussian LPF", "Gaussian HPF")
+choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", "Gaussian LPF", "Gaussian HPF", "Intensity Inverse", "Intensity Quantize")
 filter_choices = []
 
 # Add option to upload an image or use default image
@@ -29,7 +30,6 @@ filter_choices = []
 # Run analysis button function -> display the analysis on matplotlib
 def run_analysis():
     global label, root, filter_choices
-    print('button pressed -> loading image')
     input_np = cv.imread(original_image_path, 0)
     total_filters = 1
     for f in filter_choices:
@@ -64,6 +64,7 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
                 plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('LPF')
                 f.image = np.log(1+np.abs(spatial_image))
+
             elif analysis == 'Ideal HPF':
                 #HIGH PASS FILTER: Original, fourier, Fourier shift, HPF mask, Inverse
                 graph_np = shifted_np * filters.idealFilterHP(scaled_size, original_np.shape)
@@ -108,14 +109,37 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
-                f.image = origional_np
+                f.image = original_np
             
-            elif analysis == 'Edge Detection':
-                #TODO: implement edge detection
-                pass
-            
-            elif analysis == 'Compression':
-                pass
+            elif analysis == 'Intensity Inverse':
+                #Transformation => T(x) = 255 - f
+                transformed = np.copy(original_np)
+                for i in range(original_np.shape[0]):
+                    for j in range(original_np.shape[1]):
+                        transformed[i][j] = 255 - original_np[i][j]
+                #Transform graph
+                x = np.array(range(0,255))
+                y = eval('255-x')
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.plot(x,y), plt.title('pixel transform')
+                plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(transformed, "gray"), plt.title('inverse')
+                f.image = transformed
+            elif analysis == 'Intensity Quantize':
+                #number of bits to quantize
+                levels = int(f.param.get())
+                transformed = np.copy(original_np)
+                delta = 256 / levels
+                for i in range(original_np.shape[0]):
+                    for j in range(original_np.shape[1]):
+                        val = original_np[i][j]
+                        transformed[i][j] = math.floor( (val/delta) + 0.5) * delta
+                #transform graph
+                x = np.array(range(0,255))
+                y = np.floor( (x/delta) + 0.5) * delta
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.plot(x,y), plt.title('pixel transform')
+                plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(transformed, "gray"), plt.title('quantized')
+                f.image = transformed
         next_plot = next_plot + 1
     plt.show()
 next_loc = 1
@@ -148,7 +172,6 @@ def add_filter():
 
     #Update location
     next_loc = next_loc + 1
-    print('Add fliter')
 
 #create application and set size
 root = Tk()
