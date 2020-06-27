@@ -27,6 +27,14 @@ filter_choices = []
 # Add using previous image checkbox functionality
 # Add compression filters -> lossless and lossy
 
+#return inverse fourier transformed scaled to 0 - 255
+def inverseFFT(img):
+    filtered_img = np.abs(img)
+    filtered_img -= filtered_img.min()
+    filtered_img = filtered_img*255 / filtered_img.max()
+    filtered_img = filtered_img.astype(np.uint8)
+    return filtered_img
+
 # Run analysis button function -> display the analysis on matplotlib
 def run_analysis():
     global label, root, filter_choices
@@ -57,46 +65,46 @@ def run_analysis():
             if analysis == 'Ideal LPF':
                 #LOW PASS FILTER: Original, fourier, Fourier shift, LPF mask, Inverse
                 graph_np = shifted_np * filters.idealFilterLP(scaled_size, original_np.shape)
-                spatial_image = np.fft.ifft2(graph_np)
+                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
-                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('LPF')
-                f.image = np.log(1+np.abs(spatial_image))
+                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(spatial_image, "gray"), plt.title('LPF')
+                f.image = spatial_image
 
             elif analysis == 'Ideal HPF':
                 #HIGH PASS FILTER: Original, fourier, Fourier shift, HPF mask, Inverse
                 graph_np = shifted_np * filters.idealFilterHP(scaled_size, original_np.shape)
-                spatial_image = np.fft.ifft2(graph_np)
+                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
-                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('HPF')
-                f.image = np.log(1+np.abs(spatial_image))
+                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(spatial_image, "gray"), plt.title('HPF')
+                f.image = spatial_image
             
             elif analysis == 'Gaussian LPF':
                 #Gaussian LPF: Original, fourier, Fourier Shift, Mask, Inverse
                 graph_np = shifted_np * filters.gaussianLP(scaled_size, original_np.shape)
-                spatial_image = np.fft.ifft2(graph_np)
+                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
                 plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('Gaussian LPF')
-                f.image = np.log(1+np.abs(spatial_image))
+                f.image = spatial_image
             
             elif analysis == 'Gaussian HPF':
                 #Gaussian HPF: Original, fourier, Fourier Shift, Mask, Inverse
                 graph_np = shifted_np * filters.gaussianHP(scaled_size, original_np.shape)
-                spatial_image = np.fft.ifft2(graph_np)
+                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
                 plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('Gaussian HPF')
-                f.image = np.log(1+np.abs(spatial_image))
+                f.image = spatial_image
             
             elif analysis == 'Fourier':
                 #Fourier
@@ -124,14 +132,17 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.plot(x,y), plt.title('pixel transform')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(transformed, "gray"), plt.title('inverse')
                 f.image = transformed
+            
             elif analysis == 'Intensity Quantize':
                 #number of bits to quantize
+                print(original_np)
                 levels = int(f.param.get())
                 transformed = np.copy(original_np)
                 delta = 256 / levels
                 for i in range(original_np.shape[0]):
                     for j in range(original_np.shape[1]):
                         val = original_np[i][j]
+                        #print(val)
                         transformed[i][j] = math.floor( (val/delta) + 0.5) * delta
                 #transform graph
                 x = np.array(range(0,255))
