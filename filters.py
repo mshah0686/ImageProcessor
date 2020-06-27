@@ -62,8 +62,16 @@ def inverseFFT(img):
 def sobel_edge(img):
     sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     sobel_y = np.transpose(sobel_x)
-    filters = sp.convolve(sobel_x, sobel_y, mode='constant', cval = 0.0)
     x_img = sp.convolve(img, sobel_x, mode='constant', cval=0.0)
     y_img = sp.convolve(img, sobel_y, mode='constant', cval=0.0)
-    combined = sp.convolve(img, filters, mode='constant', cval=0.0)
-    return x_img, y_img, combined
+    return x_img, y_img
+
+def laplace_filter(img):
+    laplace = np.array([[0, -1, 0], [-1, 4, -1], [0, -1, 0]])
+    result = sp.convolve(img, laplace, mode='constant', cval=0.0)
+    return result
+
+def gaussian_blur(img, sig):
+    result = sp.gaussian_filter(img, sigma=sig)
+    return result
+    

@@ -21,8 +21,8 @@ class choice:
 original_image_path = "temp.jpg"
 choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", 
             "Gaussian LPF", "Gaussian HPF", 
-            "Intensity Inverse", "Intensity Quantize",
-            "Sobel Edge Detection", "Laplacian")
+            "Intensity Inverse", "Intensity Quantize", "Gaussian Blur",
+            "Sobel Gradient Combined", "Sobel Horizontal Gradient", "Sobel Vertical Gradient", "Laplacian")
 filter_choices = []
 
 # Add option to upload an image or use default image
@@ -95,7 +95,7 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
-                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('Gaussian LPF')
+                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(spatial_image, "gray"), plt.title('Gaussian LPF')
                 f.image = spatial_image
             
             elif analysis == 'Gaussian HPF':
@@ -106,7 +106,7 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(np.log(1+np.abs(graph_np)), "gray"), plt.title('mask')
-                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(np.log(1+np.abs(spatial_image)), "gray"), plt.title('Gaussian HPF')
+                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(spatial_image, "gray"), plt.title('Gaussian HPF')
                 f.image = spatial_image
             
             elif analysis == 'Fourier':
@@ -153,15 +153,41 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.plot(x,y), plt.title('pixel transform')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(transformed, "gray"), plt.title('quantized')
                 f.image = transformed
-            elif analysis == 'Sobel Edge Detection':
-                x_img, y_img, combined = filters.sobel_edge(original_np)
-                combined_2 = np.sqrt((x_img **2) + (y_img **2))
+            
+            elif analysis == 'Sobel Gradient Combined':
+                x_img, y_img= filters.sobel_edge(original_np)
+                combined = np.array(np.sqrt((x_img **2) + (y_img **2)), dtype='uint8')
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
-                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(x_img), plt.title('sobel x direction')
-                plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(y_img), plt.title('sobel y direction')
-                plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(combined), plt.title('combined')
-                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(combined_2), plt.title('combined')
-                f.image = combined_2
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(x_img, "gray"), plt.title('sobel x gradient')
+                plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(y_img, "gray"), plt.title('sobel y gradient')
+                plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(combined, "gray"), plt.title('combined')
+                f.image = combined
+            
+            elif analysis == 'Sobel Horizontal Gradient':
+                x_img, _ = filters.sobel_edge(original_np)
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(x_img, "gray"), plt.title('sobel x gradient')
+                f.image = x_img
+            
+            elif analysis == 'Sobel Vertical Gradient':
+                _, y_img= filters.sobel_edge(original_np)
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(y_img, "gray"), plt.title('sobel y gradient')
+                f.image = y_img
+                pass
+            
+            elif analysis == 'Laplacian':
+                laplace = filters.laplace_filter(original_np)
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(laplace, "gray"), plt.title('laplace edge')
+                f.image = laplace
+
+            elif analysis == 'Gaussian Blur':
+                sigma = int(f.param.get())
+                blurred = filters.gaussian_blur(original_np, sigma)
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(blurred, "gray"), plt.title('gaussian blur')
+                f.image = blurred
         next_plot = next_plot + 1
     plt.show()
 next_loc = 1
