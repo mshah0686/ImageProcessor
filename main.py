@@ -1,7 +1,7 @@
 from tkinter import *
 import cv2 as cv
 import numpy as np
-import scipy as sc
+import scipy.ndimage as sp
 import math
 import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
@@ -19,7 +19,10 @@ class choice:
         self.image = image
 
 original_image_path = "temp.jpg"
-choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", "Gaussian LPF", "Gaussian HPF", "Intensity Inverse", "Intensity Quantize")
+choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", 
+            "Gaussian LPF", "Gaussian HPF", 
+            "Intensity Inverse", "Intensity Quantize",
+            "Sobel Edge Detection", "Laplacian")
 filter_choices = []
 
 # Add option to upload an image or use default image
@@ -28,30 +31,30 @@ filter_choices = []
 # Add compression filters -> lossless and lossy
 
 #return inverse fourier transformed scaled to 0 - 255
-def inverseFFT(img):
-    filtered_img = np.abs(img)
-    filtered_img -= filtered_img.min()
-    filtered_img = filtered_img*255 / filtered_img.max()
-    filtered_img = filtered_img.astype(np.uint8)
-    return filtered_img
 
 # Run analysis button function -> display the analysis on matplotlib
 def run_analysis():
     global label, root, filter_choices
     input_np = cv.imread(original_image_path, 0)
     total_filters = 1
-    for f in filter_choices:
-        total_filters += f.use_filter.get()
-    next_plot = 0
+    sorted_choices = []
 
-    #Find analysis to use
-    for i in range(len(filter_choices)):
-        f = filter_choices[i]
+    # Make a new array of the filters that need to be used
+    for f in filter_choices:
+        if f.use_filter.get():
+            sorted_choices.append(f)
+    next_plot = 0
+    total_filters = len(sorted_choices)
+
+    #Run through filters and apply analysis
+    for i in range(len(sorted_choices)):
+        f = sorted_choices[i]
+
         #use if filter being applied
         if f.use_filter.get():
             original_np= []
             if f.use_previous.get() and i >0:
-                original_np = filter_choices[i-1].image
+                original_np = sorted_choices[i-1].image
             else:
                 original_np = input_np
             #calculuate fourier and shifts
@@ -65,7 +68,7 @@ def run_analysis():
             if analysis == 'Ideal LPF':
                 #LOW PASS FILTER: Original, fourier, Fourier shift, LPF mask, Inverse
                 graph_np = shifted_np * filters.idealFilterLP(scaled_size, original_np.shape)
-                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
+                spatial_image = filters.inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
@@ -76,7 +79,7 @@ def run_analysis():
             elif analysis == 'Ideal HPF':
                 #HIGH PASS FILTER: Original, fourier, Fourier shift, HPF mask, Inverse
                 graph_np = shifted_np * filters.idealFilterHP(scaled_size, original_np.shape)
-                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
+                spatial_image = filters.inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
@@ -87,7 +90,7 @@ def run_analysis():
             elif analysis == 'Gaussian LPF':
                 #Gaussian LPF: Original, fourier, Fourier Shift, Mask, Inverse
                 graph_np = shifted_np * filters.gaussianLP(scaled_size, original_np.shape)
-                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
+                spatial_image = filters.inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
@@ -98,7 +101,7 @@ def run_analysis():
             elif analysis == 'Gaussian HPF':
                 #Gaussian HPF: Original, fourier, Fourier Shift, Mask, Inverse
                 graph_np = shifted_np * filters.gaussianHP(scaled_size, original_np.shape)
-                spatial_image = inverseFFT(np.fft.ifft2(graph_np))
+                spatial_image = filters.inverseFFT(np.fft.ifft2(graph_np))
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(np.log(1+np.abs(fourier_np)), "gray"), plt.title('fourier')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(np.log(1+np.abs(shifted_np)), "gray"), plt.title('zero shift')
@@ -135,7 +138,6 @@ def run_analysis():
             
             elif analysis == 'Intensity Quantize':
                 #number of bits to quantize
-                print(original_np)
                 levels = int(f.param.get())
                 transformed = np.copy(original_np)
                 delta = 256 / levels
@@ -151,6 +153,15 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.plot(x,y), plt.title('pixel transform')
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(transformed, "gray"), plt.title('quantized')
                 f.image = transformed
+            elif analysis == 'Sobel Edge Detection':
+                x_img, y_img, combined = filters.sobel_edge(original_np)
+                combined_2 = np.sqrt((x_img **2) + (y_img **2))
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(x_img), plt.title('sobel x direction')
+                plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.imshow(y_img), plt.title('sobel y direction')
+                plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(combined), plt.title('combined')
+                plt.subplot(total_filters, 5, next_plot * 5 + 5), plt.imshow(combined_2), plt.title('combined')
+                f.image = combined_2
         next_plot = next_plot + 1
     plt.show()
 next_loc = 1
