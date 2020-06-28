@@ -21,7 +21,7 @@ class choice:
 original_image_path = "temp.jpg"
 choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", 
             "Gaussian LPF", "Gaussian HPF", 
-            "Intensity Inverse", "Intensity Quantize", "Gaussian Blur",
+            "Intensity Inverse", "Intensity Quantize", "Gaussian Blur", "Histogram Equalization",
             "Sobel Gradient Combined", "Sobel Horizontal Gradient", "Sobel Vertical Gradient", "Laplacian")
 filter_choices = []
 
@@ -188,6 +188,15 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(blurred, "gray"), plt.title('gaussian blur')
                 f.image = blurred
+            
+            elif analysis == 'Histogram Equalization':
+                normalized, histogram,_,_ = filters.histogram_equalization(original_np, 256)
+                new_histogram, _ = np.histogram(normalized.flatten(), 256, density=True)
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.hist(histogram), plt.title('original histogram')
+                plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.hist(new_histogram),  plt.title('normailized histogram')
+                plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(normalized, "gray"), plt.title('normalized')
+                f.image = normalized
         next_plot = next_plot + 1
     plt.show()
 next_loc = 1

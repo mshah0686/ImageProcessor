@@ -1,19 +1,29 @@
-import cv2 as cv
+from matplotlib import pyplot as plt
 import numpy as np
-import scipy.ndimage as sp
-import matplotlib.pyplot as plt
+import cv2 as cv
+from skimage import exposure
 
-def sobel_edge(image):
-    sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
-    sobel_y = np.transpose(sobel_x)
-    #img = image.flatten()
-    #sobel_filter = sobel.flatten()
-    x_img = sp.convolve(image, sobel_x, mode='constant', cval=0.0)
-    y_img = sp.convolve(image, sobel_y, mode='constant', cval=0.0)
-    plt.imshow(y_img, 'gray')
+def image_histogram_equalization(image, number_bins=256):
+    # get image histogram
+    image_histogram, bins = np.histogram(image.flatten(), number_bins, density=True)
+    cdf = image_histogram.cumsum() # cumulative distribution function
+    normalized_cdf = 255 * cdf / cdf[-1] # normalize
+    
+    # use linear interpolation of cdf to find new pixel values
+    image_equalized = np.interp(image.flatten(), bins[:-1], normalized_cdf)
+    plt.subplot(1, 5, 1), plt.plot(cdf)
+    plt.subplot(1, 5, 2), plt.hist(image_histogram)
+    plt.subplot(1, 5, 3), plt.plot(normalized_cdf)
+    #plt.subplot(1, 5, 4), plt.imshow(image_equalized.reshape(image.shape))
+    #plt.show()
+    return image_equalized.reshape(image.shape), normalized_cdf
+
+def histogram_equalize(img):
+    img_cdf, bin_centers = exposure.cumulative_distribution(img)
+    return np.interp(img, bin_centers, img_cdf)
+
+if __name__ == '__main__':
+    image = cv.imread('temp.jpg', 0)
+    result,temp= image_histogram_equalization(image)
+    plt.hist(temp)
     plt.show()
-
-input_np = cv.imread('temp.jpg', 0)
-sobel_edge(input_np)
-
-

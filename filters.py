@@ -74,4 +74,13 @@ def laplace_filter(img):
 def gaussian_blur(img, sig):
     result = sp.gaussian_filter(img, sigma=sig)
     return result
+
+def histogram_equalization(img, bins):
+    image_histogram, bins = np.histogram(img.flatten(), bins, density=True)
+    cdf = image_histogram.cumsum() # cumulative distribution function
+    normalized_cdf = 255 * cdf / cdf[-1] # normalize
+    image_equalized = np.interp(img.flatten(), bins[:-1], normalized_cdf)
+    result = image_equalized.reshape(img.shape)
+    return result, image_histogram, cdf, normalized_cdf
+
     
