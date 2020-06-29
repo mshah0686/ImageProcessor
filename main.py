@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageTk
 from tkinter import ttk
 import filters
+import argparse
 
+#Filter object -> created upon button click
 class choice:
     def __init__(self, checkbox, selection, previous, param):  
         self.use_filter = checkbox
@@ -15,8 +17,6 @@ class choice:
         self.use_previous = previous
         self.param = param
         self.image = None
-    def setImage(self, image):
-        self.image = image
 
 original_image_path = "temp.jpg"
 choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", 
@@ -25,12 +25,11 @@ choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF",
             "Sobel Gradient Combined", "Sobel Horizontal Gradient", "Sobel Vertical Gradient", "Laplacian")
 filter_choices = []
 
+#TODO LIST
 # Add option to upload an image or use default image
-# Add edge detection choices
-# Add using previous image checkbox functionality
 # Add compression filters -> lossless and lossy
-
-#return inverse fourier transformed scaled to 0 - 255
+# Dynamic quantization
+# Help button for details on each filter
 
 # Run analysis button function -> display the analysis on matplotlib
 def run_analysis():
@@ -174,7 +173,6 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
                 plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(y_img, "gray"), plt.title('sobel y gradient')
                 f.image = y_img
-                pass
             
             elif analysis == 'Laplacian':
                 laplace = filters.laplace_filter(original_np)
@@ -197,6 +195,7 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 3), plt.hist(new_histogram),  plt.title('normailized histogram')
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(normalized, "gray"), plt.title('normalized')
                 f.image = normalized
+
         next_plot = next_plot + 1
     plt.show()
 next_loc = 1
@@ -229,6 +228,14 @@ def add_filter():
 
     #Update location
     next_loc = next_loc + 1
+
+
+#get arguments for file name input
+parser = argparse.ArgumentParser(description='File name')
+parser.add_argument('-f', '--file', help='file path, default is temp.jpg')
+args = parser.parse_args()
+if args.file:
+    original_image_path = args.file
 
 #create application and set size
 root = Tk()
