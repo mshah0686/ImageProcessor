@@ -21,7 +21,7 @@ class choice:
 original_image_path = "temp.jpg"
 choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF", 
             "Gaussian LPF", "Gaussian HPF", 
-            "Intensity Inverse", "Intensity Quantize", "Gaussian Blur", "Histogram Equalization",
+            "Intensity Inverse", "Intensity Quantize", "Gaussian Blur", "Flat Filter", "Histogram Equalization",
             "Sobel Gradient Combined", "Sobel Horizontal Gradient", "Sobel Vertical Gradient", "Laplacian")
 filter_choices = []
 
@@ -196,6 +196,11 @@ def run_analysis():
                 plt.subplot(total_filters, 5, next_plot * 5 + 4), plt.imshow(normalized, "gray"), plt.title('normalized')
                 f.image = normalized
 
+            elif analysis == 'Flat Filter':
+                flat_fitered = filters.flat_filter(original_np)
+                plt.subplot(total_filters, 5, next_plot * 5 + 1), plt.imshow(original_np, "gray"), plt.title('original')
+                plt.subplot(total_filters, 5, next_plot * 5 + 2), plt.imshow(flat_fitered, "gray"),  plt.title('flat_filtered 3x3')
+                f.image = flat_fitered
         next_plot = next_plot + 1
     plt.show()
 next_loc = 1

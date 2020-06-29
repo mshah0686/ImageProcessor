@@ -83,4 +83,7 @@ def histogram_equalization(img, bins):
     result = image_equalized.reshape(img.shape)
     return result, image_histogram, cdf, normalized_cdf
 
-    
+def flat_filter(img):
+    flat_filter = np.array([[1/9, 1/9, 1/9], [1/9, 1/9, 1.9], [1/9, 1/9, 1/9]])
+    result = sp.convolve(img, flat_filter, mode='constant', cval=0.0)
+    return result
