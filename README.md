@@ -1,6 +1,6 @@
 # ImageProcessor
 
-A digitial image processing visualizer with various filters and tools implmented with `numpy` and `Tkinter`.
+A digital image processing visualizer with various filters and tools implemented with `numpy` and `Tkinter`.
 
 # Purpose
 Project done to practice skills learned while taking a Digital Image Processing course by Northwestern University on Coursera.
