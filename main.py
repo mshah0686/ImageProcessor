@@ -8,6 +8,8 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 import filters
 import argparse
+import tkinter.scrolledtext as tkscrolled
+import help_window
 
 #Filter object -> created upon button click
 class choice:
@@ -26,10 +28,10 @@ choices = ("Fourier", "Fourier Zero Shifted", "Ideal LPF", "Ideal HPF",
 filter_choices = []
 
 #TODO LIST
-# Add option to upload an image or use default image
 # Add compression filters -> lossless and lossy
 # Dynamic quantization
 # Help button for details on each filter
+
 
 # Run analysis button function -> display the analysis on matplotlib
 def run_analysis():
@@ -234,7 +236,6 @@ def add_filter():
     #Update location
     next_loc = next_loc + 1
 
-
 #get arguments for file name input
 parser = argparse.ArgumentParser(description='File name')
 parser.add_argument('-f', '--file', help='file path, default is temp.jpg')
@@ -244,13 +245,16 @@ if args.file:
 
 #create application and set size
 root = Tk()
+root.title('Image Processor')
 root.geometry("1200x150")
 
 #add a button
 but = Button(root, command = run_analysis, text = 'Analyze')
 but.grid(row=0, column=0, pady = 2)
-but = Button(root, command = add_filter, text = 'Add')
-but.grid(row=1, column=0, pady = 2)
+but2 = Button(root, command = add_filter, text = 'Add')
+but2.grid(row=1, column=0, pady = 2)
+helpBut = Button(root, command = help_window.help, text = 'Help')
+helpBut.grid(row=2, column=0, pady = 2)
 
 #run application
 root.mainloop()
